@@ -3,6 +3,7 @@
 Memoize methods of a given JavaScript object
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![NPM](https://nodei.co/npm/memoize-methods.png?mini=true)](https://npmjs.org/package/memoize-methods)
 
 ## usage
 
