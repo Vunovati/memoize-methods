@@ -15,7 +15,7 @@ describe('createMemoizeMethods', () => {
             const memoizeMethods = createMemoizeMethods({
                 onMemoSet: (
                     target: object,
-                    methodName: string,
+                    methodName: string | number,
                     methodArgs: unknown[]
                 ) => {
                     console.log(
@@ -26,7 +26,7 @@ describe('createMemoizeMethods', () => {
                 },
                 onMemoGet: (
                     target: object,
-                    methodName: string,
+                    methodName: string | number,
                     methodArgs: unknown[]
                 ) => {
                     console.log(
@@ -114,6 +114,36 @@ describe('createMemoizeMethods', () => {
                 expect(memoizedTestObject.getNextValueWithSuffix('s')).to.eq(
                     initialValue + 1 + 's'
                 )
+            })
+        })
+
+        describe('original method returns a falsy value', () => {
+            let retrievedFromCache = false
+            let numberOfSaves = 0
+
+            const memoizeMethods = createMemoizeMethods({
+                onMemoGet: () => {
+                    retrievedFromCache = true
+                },
+                onMemoSet: () => {
+                    numberOfSaves++
+                },
+            })
+
+            const testCachable = {
+                getFalsyValue() {
+                    return 0
+                },
+            }
+
+            const memoizedTestObject = memoizeMethods(testCachable)
+
+            it('saves the result only one and returns it on subsequent calls', async () => {
+                await memoizedTestObject.getFalsyValue()
+                expect(retrievedFromCache).to.eq(false)
+                await memoizedTestObject.getFalsyValue()
+                expect(numberOfSaves).to.eq(1)
+                expect(retrievedFromCache).to.eq(true)
             })
         })
 
