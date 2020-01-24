@@ -2,6 +2,10 @@ function isFunction(prop: unknown): prop is Function {
     return typeof prop === 'function'
 }
 
+function isString(prop: unknown): prop is string {
+    return typeof prop === 'string'
+}
+
 /**
  * Initializes the Map of objects with memoized methods and returns the
  * memoizeMethods function.
@@ -21,29 +25,24 @@ export function createMemoizeMethods({
     const memoResultsMap = new WeakMap<object, MemoizedMethodResults>()
 
     return function memoizeMethods<T extends object>(target: T): T {
-        return new Proxy(target, {
-            get(target: T, property: string) {
-                const interceptedProperty = (target as {
-                    [key: string]: unknown
-                })[property]
+        return new Proxy<T>(target, {
+            get(target: T, property: PropertyKey & keyof T) {
+                const interceptedProperty = target[property]
 
-                if (!isFunction(interceptedProperty)) {
+                if (!isFunction(interceptedProperty) || !isString(property)) {
                     return interceptedProperty
                 }
 
                 return function(...args: unknown[]) {
-                    const memoizedResultsForTarget = memoResultsMap.get(target)
+                    const resultsForTarget = memoResultsMap.get(target)
 
                     if (
-                        memoizedResultsForTarget &&
-                        memoizedResultsForTarget[property] &&
-                        memoizedResultsForTarget[property][JSON.stringify(args)]
+                        resultsForTarget?.[property]?.[JSON.stringify(args)] !==
+                        undefined
                     ) {
                         onMemoGet?.(target, property, args)
 
-                        return memoizedResultsForTarget[property][
-                            JSON.stringify(args)
-                        ]
+                        return resultsForTarget[property][JSON.stringify(args)]
                     }
 
                     const result = interceptedProperty.apply(target, args)
@@ -51,9 +50,9 @@ export function createMemoizeMethods({
                     onMemoSet?.(target, property, args)
 
                     memoResultsMap.set(target, {
-                        ...(memoizedResultsForTarget || {}),
+                        ...(resultsForTarget || {}),
                         [property]: {
-                            ...(memoizedResultsForTarget?.[property] || {}),
+                            ...(resultsForTarget?.[property] || {}),
                             [JSON.stringify(args)]: result,
                         },
                     })
