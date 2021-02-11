@@ -152,7 +152,7 @@ describe('createMemoizeMethods', () => {
                 foo: 'async',
             }
 
-            const testPromise = new Promise(resolve => {
+            const testPromise = new Promise((resolve) => {
                 setTimeout(() => resolve(testAsyncValue), 0)
             })
 

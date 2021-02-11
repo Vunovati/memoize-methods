@@ -33,7 +33,7 @@ export function createMemoizeMethods({
                     return interceptedProperty
                 }
 
-                return function(...args: unknown[]) {
+                return function (...args: unknown[]) {
                     const resultsForTarget = memoResultsMap.get(target)
 
                     if (
